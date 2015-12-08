@@ -5,8 +5,8 @@ var http = require('http');
 var path = require('path');
 var config = require ('../config');
 var bodyParser = require('body-parser');
-var basicAuth = require('basic-auth-connect')
- 
+var basicAuth = require('basic-auth-connect');
+var cors = require('cors'); 
 
 // init express
 var app = express();
@@ -17,7 +17,9 @@ app.use(bodyParser.urlencoded({
 
 app.use(bodyParser.json({limit: '5mb'}));
 
-app.set('port', process.env.PORT || 3000);
+app.use(cors());
+
+app.set('port', process.env.PORT || 5000);
 
 app.set('view engine', 'handlebars');
 app.set('views', __dirname + '../app/scripts/views');
@@ -40,7 +42,7 @@ app.use('/xl', express.static('../res'));
 app.use('/csv', express.static('../tmp'));
 
 // start server
-app.use(basicAuth('username', 'password'));
+//app.use(basicAuth('username', 'password'));
 http.createServer(app).listen(app.get('port'), function(){
     console.log('Express App started!');
 });
