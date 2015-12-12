@@ -49,10 +49,5 @@ http.createServer(app).listen(app.get('port'), function(){
 
 // Create server 
 
-
-
 var reports = require('./routes/reports');
-app.use('/reports', reports);
-app.get('/api/config', function(req, res){
-	res.json({a:1});
-})
+app.use('/api/reports', reports);

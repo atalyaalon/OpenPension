@@ -174,7 +174,7 @@ router.get('/totalSumInDB', function(req, res) {
 
 	})
 	.each(function(report) {
-		db.getFundValue(report.managing_body, report.report_year, report.report_quarter, report.fund, 'temp_shak')
+		db.getFundValue(report.managing_body, report.report_year, report.report_quarter, report.fund, config.table)
 		.then(function(queryResult){
 			return report.updateAttributes({
 		      sum_in_db: parseInt(Number(queryResult.rows[0].sum))
@@ -473,12 +473,12 @@ router.get('/uploadToDb', function(req, res){
 
 		console.log(report);
 
-		return dbLoader.importFile('../tmp', report.getCsvFilename(),'temp_shak');
+		return dbLoader.importFile('../tmp', report.getCsvFilename(),config.table);
 
 		//TODO: ?? upate sum_in_db in report objects
 		//
 		// .then(function(){
-		// 	return db.getFundValue(report.managing_body, report.report_year, report.report_quarter, report.fund, 'temp_shak')
+		// 	return db.getFundValue(report.managing_body, report.report_year, report.report_quarter, report.fund, config.table)
 		// })
 		// .then(function(queryResult){
 		// 	return report.updateAttributes({
@@ -492,7 +492,7 @@ router.get('/uploadToDb', function(req, res){
 		//load files to DB
 		var files = _.map(reports, function(report){ return report.getCsvFilename(); });
 
-		dbLoader.importFiles(dirs.csv, files, 'temp_shak');
+		dbLoader.importFiles(dirs.csv, files, config.table);
 
 		return reports;
 	})
@@ -522,7 +522,7 @@ router.get('/deleteFromDb', function(req, res){
 	})
 	.map(function(report){
 		
-		return db.deleteFundValues(report.managing_body, report.report_year, report.report_quarter, report.fund, 'temp_shak')
+		return db.deleteFundValues(report.managing_body, report.report_year, report.report_quarter, report.fund, config.table)
 		.then(function(queryResult){
 			return report.updateAttributes({
 		      sum_in_db: parseInt(Number(0))
@@ -538,7 +538,6 @@ router.get('/deleteFromDb', function(req, res){
 	});
 
 });
-
 
 //upload EXCEL file
 router.post('/excelFile', function(req, res){
@@ -561,6 +560,14 @@ router.post('/excelFile', function(req, res){
 			});
 		}
 	);
+});
+
+
+router.get('/config', function(req,res){
+
+	res.json({
+		table: config.table
+	});
 });
 
 

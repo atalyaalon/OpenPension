@@ -39,7 +39,7 @@ program
 	.option("-q, --quarter <quarter>", "quarter")
 	.option("-b, --body <body>", "body")
 	.option("-f, --fund <fund number>", "fund")
-	.action(function(env, args){
+	.action(function(args){
 		require("./files_loader").convertFiles(args.dir, args.body, args.fund, args.year, args.quarter);
 	})
 
@@ -48,7 +48,7 @@ program
   .command("db-create-table")
   .description("create table in database")
   .option("-t, --table <name>","table name")
-  .action(function(env, args){
+  .action(function(args){
     require('./db').createTable(args.table);
   });
 
@@ -57,7 +57,7 @@ program
   .command("db-empty-table")
   .description("truncate table in database")  
   .option("-t, --table <name>","table name")
-  .action(function(env, args){
+  .action(function(args){
     require('./db').emptyTable(args.table);
   });
 
@@ -76,7 +76,7 @@ program
 	.option("-q, --quarter <quarter>", "quarter")
 	.option("-b, --body <body>", "body")
 	.option("-f, --fund <fund number>", "fund number")
-	.action(function(env, args){
+	.action(function(args){
 		require('./fetcher').fetchKnown(args.body, args.year, args.quarter, args.fund);
 	});
 
@@ -99,7 +99,7 @@ program
 	.option("-f, --fund <fund number>", "fund number")
 	.option("-t, --table <name>","table name")
 	.option("-c, --concurrency <number>","number of concurrent DB connections, defaults to 4")
-	.action(function(env, args){
+	.action(function(args){
 		require('./dbLoader').importFilesCmd(args.dir, args.body, args.year, args.quarter, args.fund, 
 			args.table, args.concurrency);
 	})
