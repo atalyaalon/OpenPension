@@ -25,5 +25,5 @@ results
 
 npm-debug.log
 
-tmp/
+csv/
 app/bower_components/
