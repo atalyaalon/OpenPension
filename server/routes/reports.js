@@ -283,16 +283,55 @@ router.get('/csvFile', function(req, res){
 			});
 		}
 		else{
-			// res.status(404).json({
 			res.json({
 				error:{
 					msg:'File not found'
 				}
 			});
 		}
-
 	})
 });
+
+
+//Download CSV file URL if it exists
+router.get('/downloadCsvFile', function(req, res){
+
+	var where = whereFromRequest(req);
+
+	models.Report.findOne({
+		
+		where: where
+
+	})
+	.then(function(report) {
+
+		var csv_file = report.getCsvFileIfExists()
+
+		if (csv_file){
+		   res.writeHead(200, {
+				'Content-Type': 'text/csv; charset=utf8',
+				'Content-Disposition' : 'attachment; filename="'+csv_file+'"'
+		    });
+
+		    var readStream = fs.createReadStream('../tmp/'+csv_file);
+		    // We replaced all the event handlers with a simple call to readStream.pipe()
+		    readStream.pipe(res);
+		}
+		else{
+			res.json({
+				error:{
+					msg:'File not found'
+				}
+			});
+		}
+	})
+});
+
+
+
+
+
+
 
 //Get EXCEL file info if it exists
 router.get('/excelFile', function(req, res){
@@ -560,6 +599,23 @@ router.post('/excelFile', function(req, res){
 			});
 		}
 	);
+});
+
+//count rows of fund in DB
+router.get('/countRows', function(req, res){
+
+	return db.countFundRows(req.query.managing_body, req.query.report_year, req.query.report_quarter, req.query.fund, config.table)
+	.then(function(result){
+		console.log(result);
+		
+		res.json( {
+			count: result.rows[0].count
+		});
+	})
+	.catch(function(e){
+		console.log(e.stack);
+	});
+
 });
 
 

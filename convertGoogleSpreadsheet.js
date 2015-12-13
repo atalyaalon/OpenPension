@@ -24,7 +24,7 @@ sequelize.sync().then(function() {
 
   fetcher.readGoogleDocsFundsFile()
   	.then(function(funds){
-  		funds = Utils.filterFunds(funds, null, 2015, 2, null);
+  		funds = Utils.filterFunds(funds, null, 2015, 3, null);
   		return funds;
   	})
 	.each(function(fund){

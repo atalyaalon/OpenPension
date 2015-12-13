@@ -6,7 +6,7 @@ var fs = require('fs'),
     emptyTableTemplate = handlebars.compile(fs.readFileSync(__dirname + '/sql/emptyTable.hbs').toString()),
     getFundValueTemplate = handlebars.compile(fs.readFileSync(__dirname + '/sql/getFundValue.hbs').toString()),
     deleteFundValuesTemplate = handlebars.compile(fs.readFileSync(__dirname + '/sql/deleteFundValues.hbs').toString()),
-    metaTable = require(__dirname + '/common/MetaTable').getMetaTable(),
+    countFundRowsTemplate = handlebars.compile(fs.readFileSync(__dirname + '/sql/countFundRows.hbs').toString()),    metaTable = require(__dirname + '/common/MetaTable').getMetaTable(),
     columnsNames = metaTable.englishColumns,
     columnsTypes = metaTable.dataTypes;
 
@@ -326,6 +326,30 @@ function deleteFundValues(managing_body, report_year, report_quarter, fund, tabl
 }
 
 
+function countFundRows(managing_body, report_year, report_quarter, fund, tableName){
+
+  if (_.isEmpty(tableName) ){
+    tableName = config.table;
+  }
+
+  var data = {
+    tableName : tableName,
+    report_year : report_year,
+    report_quarter : report_quarter,
+    fund : fund,
+    managing_body : managing_body
+  };
+
+  var countFundRowsSql = countFundRowsTemplate(data);
+
+  console.log(countFundRowsSql);
+
+  return query(countFundRowsSql);
+}
+
+
+
+
 exports.query = query;
 exports.pg = db.pg;
 exports.csv = db.csv;
@@ -335,6 +359,7 @@ exports.defaultColumnsNamesMapping = defaultColumnsNamesMapping;
 exports.columnsNames = columnsNames;
 exports.deleteFundValues = deleteFundValues;
 exports.getFundValue = getFundValue;
+exports.countFundRows = countFundRows;
 
 exports.open = function() {
   if (config.db_mode == "csv")
