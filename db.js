@@ -235,22 +235,27 @@ db.pg.prototype = {
 // };
 
 function query(sqlQuery){
-  return  pg.connectAsync(config.connection_string)
-        .spread(function(client, release) {
-          
-          return new Promise(function(resolve,reject){
-      
-            return client.queryAsync(sqlQuery)
-            .then(function(qresult){
-              release();
-              resolve(qresult);
-            })
-            .catch(function(err){
-              reject(err);
-            });
+  return new Promise(function(resolve,reject){
+    pg.connect(config.connection_string,
+        function(err, client, done) {
 
+          // if (err) throw err;
+          
+          if (err){
+            return reject(err);
+          }
+        
+          client.query(sqlQuery, function (err, result) {
+            done();
+            if (err){
+              return reject(err);
+            }
+            else{
+              return resolve(result.rows);
+            }
           });
-      });
+        });
+  });
 }
 
 function createTable(tableName){
