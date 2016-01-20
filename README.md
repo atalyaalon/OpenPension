@@ -109,7 +109,7 @@ $ node op.js fetch-google [options]
     -q, --quarter <quarter>   quarter
     -b, --body <body>         body
     -f, --fund <fund number>  fund number
-    -t, --trgdir <name>       path of Excel files, default:/Users/shakhallevinson/duvdev/OpenPension/excel/
+    -t, --trgdir <name>       path of Excel files, default:./excel/
     -o, --overwrite           overwrite existing Excel files, default: false
 ```
 
