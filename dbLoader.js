@@ -132,16 +132,16 @@ module.exports.importFile = function(parentDir, filename, tableName){
 								}
 
 								//File not in DB, copy to table
-								var pgstream = client.query(copyFrom('COPY '+ tableName +' FROM STDIN HEADER CSV NULL \'\'' ));
+								var pgStream = client.query(copyFrom('COPY '+ tableName +' FROM STDIN HEADER CSV NULL \'\'' ));
 								var sqlStream = fsep.createReadStream(filePath);
-							
-							  	sqlStream.on('error', 
+
+							  	sqlStream.on('error',
 								  	function(err){
 								  		logger.error(" " +err)
 										resolve(false);				  		
 							  	});
-							  	sqlStream.pipe(pgstream)
-									.on('end', 
+							  	sqlStream.pipe(pgStream)
+									.on('end',
 									  	function(){
 											resolve(true);
 								  		})

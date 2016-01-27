@@ -14,11 +14,13 @@
     "bluebird": "latest",
     "coffee-script": "latest",
     "commander": "latest",
+    "elasticsearch": "^10.0.1",
     "express": "latest",
     "fs-extra": "^0.18.2",
     "fs-extra-promise": "^0.1.0",
     "handlebars": "^3.0.3",
     "jasmine-node": "1.14.2",
+    "json-2-csv": "~2.0.10",
     "jszip": "^2.5.0",
     "moment": "latest",
     "node-zip": "1.0.1",
@@ -32,11 +34,11 @@
     "winston": "^1.0.0",
     "xlsjs": "^0.7.5",
     "xlsx": "^0.7.12",
-    "xml2js": "latest",
-    "zombie": "3.1.0",
-    "json-2-csv": "~2.0.10"
+    "xml2js": "latest"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "grunt-browserify": "^4.0.1"
+  },
   "scripts": {
     "test": "cake test"
   },
