@@ -1,7 +1,7 @@
 {
   "name": "OpenPension",
   "version": "0.0.1",
-  "description": "This will annoy pention funds (we hope)",
+  "description": "This will annoy pension funds (we hope)",
   "main": "./index.js",
   "keywords": [
     "pension"
