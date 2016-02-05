@@ -7,11 +7,6 @@ var fs = require('fs'),
 
 var columnsNames = DB.columnsNames;
 
-exports.write = function(managingBody, fund, year, quarter, instrument, instrumentSub, tabData, headers){
-	var fund = utils.getFundObj(managingBody, year, quarter, fund);
-	var filename = utils.filename(dirs.csv, fund, ".csv");
-	DB.csv.write(filename, headers, managingBody, fund, year, quarter, instrument, instrumentSub, tabData);
-}
 
 exports.writeParsedResult = function(managing_body, fund_number, report_year, report_qurater, result, trgdir){
 

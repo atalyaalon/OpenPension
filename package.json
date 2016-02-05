@@ -15,6 +15,7 @@
     "bluebird": "2.0.5",
     "coffee-script": "latest",
     "commander": "latest",
+    "elasticsearch": "^10.0.1",
     "express": "latest",
     "fs-extra": "^0.18.2",
     "fs-extra-promise": "^0.1.0",
