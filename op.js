@@ -98,27 +98,27 @@ program
 	});
 
 //load files to elastic
-program
-	.command("elastic-load-files")
-	.description("load csv files to elastic")
-	.option("-y, --year <year>", "year")
-	.option("-q, --quarter <quarter>", "quarter")
-	.option("-b, --body <body>", "body")
-	.option("-f, --fund <fund number>", "fund number")
-	.option("-t, --table <name>","table name")
-	.option("-s, --srcdir <name>","path of CSV files, default:"+dirs.csv)
-	.option("-c, --concurrency <number>","number of concurrent DB connections, defaults to 4")
-	.action(function(args){
-		if (!process.argv.slice(3).length) {
-			this.outputHelp();
-			return;
-		}
-
-		var srcdir = args.srcdir || dirs.csv;
-
-		require('./elasticLoader').importFilesCmd(srcdir, args.body, args.year, args.quarter, args.fund,
-			args.table, args.concurrency);
-	})
+//program
+//	.command("elastic-load-files")
+//	.description("load csv files to elastic")
+//	.option("-y, --year <year>", "year")
+//	.option("-q, --quarter <quarter>", "quarter")
+//	.option("-b, --body <body>", "body")
+//	.option("-f, --fund <fund number>", "fund number")
+//	.option("-t, --table <name>","table name")
+//	.option("-s, --srcdir <name>","path of CSV files, default:"+dirs.csv)
+//	.option("-c, --concurrency <number>","number of concurrent DB connections, defaults to 4")
+//	.action(function(args){
+//		if (!process.argv.slice(3).length) {
+//			this.outputHelp();
+//			return;
+//		}
+//
+//		var srcdir = args.srcdir || dirs.csv;
+//
+//		require('./elasticLoader').importFilesCmd(srcdir, args.body, args.year, args.quarter, args.fund,
+//			args.table, args.concurrency);
+//	})
 
 // program
 // 	.command("dump-funds")
@@ -126,6 +126,15 @@ program
 // 	.action(function(){
 // 		require('./fetcher').dumpFunds();
 // 	});
+
+//load indices to elastic
+program
+	.command("elastic-recreate-indices")
+	.description("load production data to elastic")
+	.action(function(){
+		require('./elasticLoader').recreateIndices();
+	})
+
 
 //download and convert files in Google Doc
 program

@@ -6,6 +6,7 @@ var path = require('path');
 var fs = require('fs');
 var logger = require('./logger');
 var Utils = require('./utils');
+var _ = require('underscore');
 var db = require('./db');
 var CSVParser = Promise.promisify(require('json-2-csv').csv2json);
 var elasticsearch = require('elasticsearch');
@@ -14,8 +15,6 @@ var client = new elasticsearch.Client({
     log: 'trace',
     apiVersion: '2.1'
 });
-
-
 
 module.exports.importFilesCmd = function(parentDir, body, year, quarter, fund_number, tableName, concurrency){
     return fsep.readdirAsync(parentDir)
@@ -120,72 +119,6 @@ module.exports.importFile = function(parentDir, filename, tableName){
         var fund = filename.split('_')[3].split('.')[0];
         var managing_body = filename.split('_')[0];
 
-/*
-    client.indices.create({
-        index: 'production',
-        body:{
-            mappings: {
-                "investment": {
-                    "properties": {
-                        "fair_value": {
-                            "type": "double"
-                        }
-                    }
-                }
-            }
-        }
-        //body:{
-        //    "properties": {
-        //        "fair_value": {
-        //            "type": "double"
-        //        }
-        //    }
-        //}
-    }).then(function(result){
-        console.log("a"+JSON.stringify(result));
-    }).catch(function(err){
-        console.log("b"+JSON.stringify(err));
-    });
-*/
-
-    /*
-    //aggregate
-    //select count(*),sum(fair_value),sum(market_cap),industry from production where report_year='2015' and report_qurater='1' and fund='8056' and managing_body='yl' group by industry
-        client.search({
-            index: 'production',
-            body: {
-                "query": {
-
-                    "bool": {
-                        "must": [
-                            {"match": {"fund": fund}}
-                        ]
-                    }
-                },
-                "aggs":{
-                    "industries":{
-                        "terms":{
-                            "field": "industry",
-                            "size": "400"
-                        },
-                        "aggs":{
-                          "value":{
-                              "sum":{
-                                  "field":"fair_value"
-                              }
-                          }
-                        }
-                    }
-
-                }
-            }
-        }).then(function(result){
-         console.log(JSON.stringify(result));
-        });
-
-        return;
-*/
-
     client.count({
             index: 'production',
             body: {
@@ -225,7 +158,7 @@ module.exports.importFile = function(parentDir, filename, tableName){
 
                         var count = response.count;
 
-                        if (count > 0){ //file in DB, skip file
+                        if (count > 0){ //fund in DB, skip file
                             logger.info([managing_body, year, quarter, fund].join("_") + " file already loaded to Elastic	")
                             resolve();
                             return;
@@ -256,118 +189,103 @@ module.exports.importFile = function(parentDir, filename, tableName){
                     });
             });
 
-        //})
 }
 
-/*
- client.bulk({
- body: [
- // action description
- { index:  { _index: 'production', _type: 'investment' } },
- // the document to index
- { title: 'foo' }
- ]
- }, function (err, resp) {
- // ...
- });
-*/
-/*
-client.bulk({
-    body: [
-        // action description
-        { index:  { _index: 'production', _type: 'investment' } },
-        // the document to index
-        { title: 'foo' }
-    ]
-}, function (err, resp) {
-    // ...
-});
-*/
-/*
-
-//delete by id
-client.delete({
-    index: 'production',
-    type: 'investment',
-    id: 'AVIKNciiwKZobl7ctZ3n'
-}, function (error, response) {
-    // ...
-    console.log(error)
-    console.log(response)
-});
-    */
-
-/*
-//delete index
-client.indices.delete({
-    index: 'production'
-}, function (error, response) {
-    // ...
-    console.log(error)
-    console.log(response)
-});
-*/
-
-/*
- //set mapping
- client.indices.putMapping({
- index: 'production',
- type: 'investment',
- //body:{
- //    mappings: {
- //        "investment": {
- //            "properties": {
- //                "fair_value": {
- //                    "type": "double"
- //                }
- //            }
- //        }
- //    }
- //}
- body:{
- "properties": {
- "fair_value": {
- "type": "double"
- }
- }
- }
- }).then(function(result){
- console.log("a"+JSON.stringify(result));
- }).catch(function(err){
- console.log("b"+JSON.stringify(err));
- });
-
- return;
- */
 
 
-var tableName = "pension_data_all";
-var body = 'yl';
-var year = '2015';
-var quarter = '1';
-var fund = '8056';
+module.exports.copyDbColumnToEs = function(fieldName){
 
-var sql = "SELECT * FROM "+ tableName +" WHERE managing_body='" +body +"'"
-    + " AND report_year='"+year+"' AND report_qurater='"+quarter+"'"
-    + " AND fund='"+fund+"' ";
+    var tableName = "pension_data_all";
+    var sql = "SELECT distinct("+fieldName+") FROM "+ tableName ;
 
-console.log(sql);
-var results = db.query(sql)
-    .then(function(jsonData){
+    return db.query(sql)
+        .then(function(data){
 
-        var body  = [];
-        for (var i = 0; i < jsonData.length; i++){
-            body.push({ index:  { _index: 'production', _type: 'investment' } });
-            body.push(jsonData[i]);
-        }
 
-        return client.bulk({
-            body: body
+                var body  = [];
+                for (var i = 0; i < data.length; i++){
+                    body.push({ index:  { _index: 'production', _type: fieldName } });
+                    body.push(data[i]);
+                }
+
+
+                return body;
         })
-    })
+        .then(function(body){
+            return client.bulk({
+                body: body
+            }, function (err, resp) {
+                // ...
+                console.log(err)
+                console.log(resp)
+            });
+        })
+
+
+}
+
+
+
+module.exports.searchInIndex = function(type, term){
+
+    return client.search({
+            index: 'production',
+            type: type,
+            body:
+            {
+                "query": {
+                    "query_string": {
+                        "query": "*"+term+"*",
+                    }
+                }
+            }
+        })
     .then(function(result){
-        console.log(result);
-    })
-    .catch(function(err){
-        console.log(err);
+        var result = result.hits.hits;
+        result = _.map(result, function(r){return r._source});
+        return result;
     });
+
+}
+
+module.exports.deleteIndex = function(){
+    return client.indices.delete({
+        index:'production'
+
+    }).then(function(result){
+        //console.log(JSON.stringify(result));
+    }).catch(function(err){
+        console.log(JSON.stringify(err));
+    });
+}
+
+module.exports.createIndex = function(){
+    return client.indices.create({
+        index: 'production',
+        body:{
+            //mappings: {
+            //    "investment": {
+            //        "properties": {
+            //            "fair_value": {
+            //                "type": "double"
+            //            }
+            //        }
+            //    }
+            //}
+        }
+    }).then(function(result){
+        //console.log(JSON.stringify(result));
+    }).catch(function(err){
+        console.log(JSON.stringify(err));
+    });
+}
+
+module.exports.recreateIndices = function(){
+
+    module.exports.deleteIndex()
+        .then(module.exports.createIndex())
+        .then(module.exports.copyDbColumnToEs('fund_name'))
+        .then(module.exports.copyDbColumnToEs('instrument_name'))
+        .then(module.exports.copyDbColumnToEs('instrument_id'));
+
+}
