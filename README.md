@@ -19,11 +19,10 @@ git clone ...
 git submodule init
 git submodule update
 ```
-and then run (must be node ~v10.x..)
+
 ```shell
 npm install
 ```
-switch node versions easily with [nvm](https://github.com/creationix/nvm)
 
     
 ## Commands
