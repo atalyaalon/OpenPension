@@ -11,7 +11,8 @@ var fs = require('fs'),
     columnsTypes = metaTable.dataTypes;
 
 var Promise = require('bluebird');
-var pg = require('postgres-bluebird');
+var pg = require('pg');
+var squel = require('squel');
 
 var defaultColumnnNames = ['managing_body', 'fund' ,'report_year', 'report_qurater', 'instrument_type', 'instrument_sub_type'];
 var defaultColumnnTypes = ['string', 'number' ,'number', 'number', 'string', 'string'];
@@ -38,14 +39,12 @@ function query(sqlQuery){
     pg.connect(config.connection_string,
         function(err, client, done) {
 
-          // if (err) throw err;
-          
           if (err){
             return reject(err);
           }
         
           client.query(sqlQuery, function (err, result) {
-            done();
+            client.end();
             if (err){
               return reject(err);
             }
@@ -128,6 +127,67 @@ function deleteFundValues(managing_body, report_year, report_quarter, fund, tabl
 }
 
 
+///copied form dal.js - postponing moving to common
+/**
+ * Add previous quarters to Squel query
+ * @param query    : Squel select
+ * @param year     : starting year
+ * @param quarter  : starting quarter
+ * @param numOfQuarters : number of previous quarters to add to query
+ * @param callback : function to handle result rows
+ */
+function addLastQuartersToQuery(query, year, quarter, numOfQuarters){
+
+    var expr=squel.expr();
+    var quarters = 	getLastQuarters(year, quarter, numOfQuarters);
+    for (var i = 0; i < quarters.length; i++){
+        expr.or_begin()
+            .and("report_year = "+ quarters[i]['year'])
+            .and("report_qurater = " + quarters[i]['quarter'])
+            .end();
+    }
+
+    query.where(expr);
+
+    return query;
+}
+
+/**
+ * Get previous quarters, including current, one based.
+ * @param year : year to start counting back from
+ * @param quarter : quarter to start counting back from
+ * @return Array : [{'quarter':'1','year:'2012'}, ...]
+ */
+function getLastQuarters (year, quarter, numOfQuarters){
+    if (quarter > 4){
+        throw "illegal quarter";
+    }
+
+    var res = [];
+    var q = quarter;
+    for (var i = 0; i < numOfQuarters; i++) {
+
+        var obj = {
+            'quarter': ''+q,
+            'year': ''+year,
+            'str' : ''+ year + '_' + q
+        };
+
+        res.push(obj);
+
+        if (q == 1){
+            year--;
+            q = 4;
+        }
+        else{
+            q--;
+        }
+
+    };
+    return res;
+}
+
+
 exports.query = query;
 exports.createTable = createTable;
 exports.emptyTable = emptyTable;
@@ -135,5 +195,6 @@ exports.defaultColumnsNamesMapping = defaultColumnsNamesMapping;
 exports.columnsNames = columnsNames;
 exports.deleteFundValues = deleteFundValues;
 exports.getFundValue = getFundValue;
+exports.addLastQuartersToQuery = addLastQuartersToQuery;
 
 

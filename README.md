@@ -39,6 +39,7 @@ $ node op.js [command] [options]
     db-empty-table [options]    truncate table in database
     db-load-files [options]     load csv files to database
     fetch-google [options]      download files in Google Doc.
+    recreate-elastic-indices    copy database data to elastic search.
 ```
 
 ## Convert Excel files to CSV

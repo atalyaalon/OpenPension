@@ -4,6 +4,7 @@ var config = require('./config');
 var throat = require('throat')
 var path = require('path');
 var fs = require('fs');
+var squel = require('squel');
 var logger = require('./logger');
 var Utils = require('./utils');
 var _ = require('underscore');
@@ -196,9 +197,12 @@ module.exports.importFile = function(parentDir, filename, tableName){
 module.exports.copyDbColumnToEs = function(fieldName){
 
     var tableName = "pension_data_all";
-    var sql = "SELECT distinct("+fieldName+") FROM "+ tableName ;
 
-    return db.query(sql)
+    var select = squel.select().from(tableName);
+    select.field(fieldName).distinct();
+    select = db.addLastQuartersToQuery(select, config.current_year, config.current_quarter, 4);
+
+    return db.query(select.toString())
         .then(function(data){
 
 

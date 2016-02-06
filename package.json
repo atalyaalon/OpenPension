@@ -29,6 +29,7 @@
     "pg-copy-streams": "^0.3.0",
     "postgres-bluebird": "0.0.4",
     "request": "latest",
+    "squel": "^4.2.3",
     "throat": "^1.0.0",
     "underscore": "latest",
     "winston": "^1.0.0",

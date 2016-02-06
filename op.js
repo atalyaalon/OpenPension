@@ -129,7 +129,7 @@ program
 
 //load indices to elastic
 program
-	.command("elastic-recreate-indices")
+	.command("recreate-elastic-indices")
 	.description("load production data to elastic")
 	.action(function(){
 		require('./elasticLoader').recreateIndices();
