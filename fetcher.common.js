@@ -71,7 +71,7 @@ exports.downloadFundFile = function(fund, trgdir, overwrite) {
 					xlFilename = utils.filename(trgdir, fund, contentTypeExt);
 				}
 				else{
-					return reject();
+					return reject("Fund: " + [fund.body, fund.year, fund.quarter, fund.number].join("_") + "\nError downloading file from " + fund.url + " StatusCode: " + res.statusCode);
 				}
 
 			}
