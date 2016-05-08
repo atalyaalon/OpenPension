@@ -45,6 +45,7 @@ function query(sqlQuery){
         
           client.query(sqlQuery, function (err, result) {
             client.end();
+            done();
             if (err){
               return reject(err);
             }
