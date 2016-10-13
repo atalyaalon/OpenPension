@@ -63,6 +63,7 @@ exports.convertFiles = function(xlfiles, srcdir, trgdir, overwrite){
 		var csvFilename = Utils.filename(trgdir, fund, '.csv');
 
 		if (fs.existsSync(csvFilename) && !overwrite){
+			console.log("Converted file exists:" + csvFilename);
 			logger.warn("Converted file exists:" + csvFilename );
 			return;
 		}

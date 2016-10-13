@@ -8,7 +8,9 @@ var http = require("http"),
 	Promise = require("bluebird"),
 	_ = require("underscore"),
 	Utils = require("./utils.js");
+var pg = require('postgres-bluebird');
 
+var config = require('./config');
 
 var readGoogleDocsFundsFile = function(){
 
@@ -31,7 +33,7 @@ var readGoogleDocsFundsFile = function(){
 			res.on('end', function(){
 				var Baby = require('babyparse');
 
-				data = String(data).replace(/ /g,''); //remove whitespaces
+				// data = String(data).replace(/ /g,''); //remove whitespaces
 				data = Baby.parse(data, {header:false}).data;
 
 				parseCsvFetch(data)
@@ -79,14 +81,25 @@ var parseCsvFetch = function(parsedLines){
 
 		var quarter =  new Quarter(startYear, startQuarter -1);
 
+		var body = String(line[2]).toLowerCase().trim()
+		var body_heb = String(line[3]).trim();
+		var fund_heb = String(line[4]).trim();
+		var number = String(line[5]).trim();
+
 		for (var i = 8; i < line.length; i++){
 
-			var url = validateUrl(line[i]);
-			var body = line[2];
-			var number = line[5];
+			var url = validateUrl(String(line[i]).trim());
 
 			if (body && number && url )
-				_out.push({ body : body, number : number, url : url, year : quarter.year, quarter : quarter.quarter + 1 })
+				_out.push({
+					body : body,
+					body_heb: body_heb,
+					fund_heb: fund_heb,
+					number : number,
+					url : url,
+					year : quarter.year,
+					quarter : quarter.quarter + 1
+				})
 
 			quarter.increase();
 		}
@@ -154,6 +167,54 @@ exports.fetchKnown = function(body, year, quarter, fund_number, trgdir, overwrit
 	});
 };
 
+
+
+exports.fundsTable = function(){
+
+	readGoogleDocsFundsFile()
+		.then(function(allFunds){
+			var uniqFunds = _.chain(allFunds)
+				.map(function(fund){return {
+						id: fund.number,
+						managing_body: fund.body,
+						managing_body_heb: fund.body_heb,
+						name: fund.fund_heb,
+						url: fund.url
+					}
+				})
+				.uniq(false, function(fund){
+						return fund.managing_body+fund.id;
+					}
+				).value();
+			return uniqFunds;
+		})
+		.then(function(funds){
+
+			return  pg.connectAsync(config.connection_string)
+				.spread(function(client, release) {
+
+					_.each(funds, function(fund, i){
+						var tableName = "admin_funds3";
+						var sql = "INSERT INTO "+ tableName +" (id, managing_body, managing_body_heb, name, url) SELECT " +
+							fund.id + ", '"+fund.managing_body+"', '" +"', '', ''" +
+							" WHERE NOT EXISTS ( " +
+							" SELECT id from " + tableName + " WHERE id = " + fund.id +
+							")";
+						console.log(i + " " +sql);
+						return client.query(sql);
+
+					})
+					release();
+
+				});
+		})
+		.then(function(xlFilename){
+			console.log(xlFilename);
+		})
+		.catch(function(e){
+			console.log(e.stack);
+		});
+};
 
 
 exports.fetchContrib = function(){
@@ -231,3 +292,4 @@ exports.dumpFunds = function(body, year, quarter, fund_number){
 };
 
 exports.readGoogleDocsFundsFile = readGoogleDocsFundsFile;
+// exports.fundsTable();

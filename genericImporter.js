@@ -28,7 +28,10 @@ global.debug = true;
 var levTolerance = 2;
 var aliasMap = {
 	"סוג מטבע" : [ "מטבע" ],
-	"שם נייר ערך" : [ "מזומנים ושווי מזומנים","שם ני''ע", "סוג נכס", "שם", "שם המנפיק/שם נייר ערך" ],
+	"שם נייר ערך" : [ "מזומנים ושווי מזומנים","שם ני''ע", "סוג נכס", "שם", "שם המנפיק/שם נייר ערך", "פקדונות מעל 3 חודשים","זכויות במקרעין", "השקעות אחרות", "השקעות" , "הלוואת",
+					"1. תעודות התחייבות ממשלתיות","2. תעודות חוב מסחריות", "שם נייר ערך",
+					"3. אג”\ח קונצרני", "4. מניות", "5. תעודות סל", "6. קרנות נאמנות", "5. קרנות השקעה",
+					"7. כתבי אופציה", "8. אופציות", "9. חוזים עתידיים", "10. מוצרים מובנים"],
 	"שיעור מנכסי ההשקעה" : [ "שיעור מנכסי הקרן", "שיעור מהנכסים","שעור מנכסי השקעה" ],
 	"מספר נייר ערך" : [ "מספר ני\"ע", "מס' נייר ערך" ],
 	"שיעור מהערך הנקוב המונפק" : [ "שיעור מהע.נ המונפק", "שיעור מהע.נ המונפק" ],
@@ -176,6 +179,30 @@ var headersExtractor = function(inputLine, headers, foundHeadersMapping){
 			return res;
 			
 		},[]);
+
+		//patch for when instrumentName column header is empty.
+		var instrumentNameCol = _.find(foundFromHeader, function(column){ return column.foundCell == "שם נייר ערך"; });
+		var instrumentNumberCol = _.find(foundFromHeader, function(column){ return column.foundCell == "מספר נייר ערך"; });
+
+
+		if (instrumentNameCol == undefined && instrumentNumberCol != undefined && instrumentNumberCol.column){
+
+			//index of column in sheet
+			var newColIndex = instrumentNumberCol.column - 1;
+
+			var newInstrumentNameCol = {
+				column: newColIndex,
+				foundCell : "שם נייר ערך",
+				origCell: ""
+			};
+
+
+			//index of column in foundFromHeader array
+			var instrumentNumberIndex = _.findIndex(foundFromHeader, function(column){ return column.foundCell == "מספר נייר ערך"; });
+
+			foundFromHeader.splice(instrumentNumberIndex, 0, newInstrumentNameCol)
+		}
+
 
 		foundFromHeader.forEach(function(fhm){
 			if (global.debug){
@@ -453,6 +480,9 @@ var parseSheets = function(workbook){
 		}
 
 		var sheetName = sheetNamesInWorkbook.shift();
+
+
+		// if (sheetTabNum != 2) continue;
 
 		var dim = xlsx.getDimension(workbook, sheetName);
 
