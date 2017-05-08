@@ -148,7 +148,7 @@ var getContribFunds = function() {
 exports.fetchKnown = function(body, year, quarter, fund_number, trgdir, overwrite){
 
 	if (!fs.existsSync(trgdir)){
-		logger.info("Creating directory:" +trgdir);
+		// logger.info("Creating directory:" +trgdir);
 		fs.mkdirSync(trgdir);
 	}
 
