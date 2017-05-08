@@ -1,6 +1,7 @@
 var URL = require("url"),
 	http = require("http"),
 	https = require("https"),
+	request = require("request"),
 	fs = require("fs"),
 	Promise = require("bluebird"),
 	CSVWriter = require('./CSVWriter.js'),
@@ -32,7 +33,8 @@ exports.downloadFundFile = function(fund, trgdir, overwrite) {
 
 		var isHttps = url.protocol == "https:";
 		var options = {
-			hostname: url.hostname,
+			url: fund.url,
+			followAllRedirects: true,
 			headers: {'user-agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.79 Safari/535.11'},
 			port: url.port ? url.port : (isHttps ? 443 : 80),
 			path: url.path,
@@ -43,13 +45,12 @@ exports.downloadFundFile = function(fund, trgdir, overwrite) {
 
 		var client = isHttps ? https : http;
 
-		var req = client.request(options, function(res) {
+		var req = request(options);
 
-			res.on('end', function() {
+		req.on('end', function() {
 
-				return resolve(xlFilename);
+			return resolve(xlFilename);
 
-			});
 		});
 
 		req.on('response',  function (res) {
@@ -66,7 +67,7 @@ exports.downloadFundFile = function(fund, trgdir, overwrite) {
 				var contentTypeExt = getExtByResponseContentType(res);
 
 				console.log("ext by response content type: "+contentTypeExt);
-				
+
 				if (contentTypeExt != undefined){
 					xlFilename = utils.filename(trgdir, fund, contentTypeExt);
 				}
@@ -81,7 +82,7 @@ exports.downloadFundFile = function(fund, trgdir, overwrite) {
 				return resolve(xlFilename);
 			}
 
-			console.log('fetching ' + xlFilename );
+			console.log('fetching: ' + xlFilename );
 			res.pipe(fs.createWriteStream(xlFilename, { flags: 'w+', encoding: "binary", mode: 0666 }));
 		});
 
