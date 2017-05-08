@@ -83,10 +83,10 @@ var parseCsvFetch = function(parsedLines){
 
 		var body = String(line[2]).toLowerCase().trim()
 		var body_heb = String(line[3]).trim();
-		var fund_heb = String(line[4]).trim();
-		var number = String(line[5]).trim();
+		var fund_heb = String(line[5]).trim();
+		var number = String(line[7]).replace(/\//g, '').trim();
 
-		for (var i = 8; i < line.length; i++){
+		for (var i = 10; i < line.length; i++){
 
 			var url = validateUrl(String(line[i]).trim());
 
